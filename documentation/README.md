@@ -16,6 +16,8 @@ Explore the documentation for each command:
 | `hob create lwc <name>`        | Generate an LWC bundle with automated `js-meta.xml` targets | [⚡ Scaffolding Lightning Web Components](create-lwc.md) |
 | `hob create apex <name>`       | Create an Apex class with optional companion test class     | [🧪 Scaffolding Apex Classes](create-apex.md)            |
 | `hob create trigger <sobject>` | Create a trigger and separation-of-concerns handler class   | [🎯 Scaffolding Triggers & Handlers](create-trigger.md)  |
+| `hob create queueable <name>`  | Scaffold a Queueable Apex class with optional test class    | [⚡ Scaffolding Queueable Apex](create-queueable.md)     |
+| `hob create batch <name>`      | Scaffold a Batchable Apex class with optional test class    | [🔄 Scaffolding Batch Apex](create-batch.md)             |
 | `hob hearth [alias]`           | Light, inspect, or sweep the hearth (Dev Hub management)    | [🕯️ The Hearth (Dev Hub)](hearth.md)                    |
 
 ---
