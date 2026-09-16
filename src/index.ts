@@ -3,6 +3,7 @@ import path from "node:path";
 import fs from "node:fs";
 import { Command } from "commander";
 import { registerCreateCommand } from "./commands/create/index.js";
+import { registerHearthCommand } from "./commands/hearth.js";
 
 // Read version safely from package.json
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -26,6 +27,7 @@ program
 
 // Register commands
 registerCreateCommand(program);
+registerHearthCommand(program);
 
 // Handle unknown commands gracefully
 program.on("command:*", (operands) => {

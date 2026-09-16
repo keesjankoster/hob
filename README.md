@@ -42,14 +42,15 @@ npm link
 
 ## 🛠️ Usage & Commands
 
-Detailed guides and flag references have been moved to the [**Documentation**](Documentation/README.md) index:
+Detailed guides and flag references have been moved to the [**Documentation**](documentation/README.md) index:
 
-- 🪄 [**Scaffolding Projects**](Documentation/create-project.md) (`hob create project <name>`)
-- ⚡ [**Scaffolding Lightning Web Components**](Documentation/create-lwc.md) (`hob create lwc <name> [--target record,app]`)
-- 🧪 [**Scaffolding Apex Classes**](Documentation/create-apex.md) (`hob create apex <name> [--with-test]`)
-- 🎯 [**Scaffolding Triggers & Handlers**](Documentation/create-trigger.md) (`hob create trigger <sobject>`)
+- 🪄 [**Scaffolding Projects**](documentation/create-project.md) (`hob create project <name>`)
+- ⚡ [**Scaffolding Lightning Web Components**](documentation/create-lwc.md) (`hob create lwc <name> [--target record,app]`)
+- 🧪 [**Scaffolding Apex Classes**](documentation/create-apex.md) (`hob create apex <name> [--with-test]`)
+- 🎯 [**Scaffolding Triggers & Handlers**](documentation/create-trigger.md) (`hob create trigger <sobject>`)
+- 🕯️ [**Lighting the Hearth (Dev Hub)**](documentation/hearth.md) (`hob hearth [alias]`)
 
-Visit the [**Documentation Index**](Documentation/README.md) for full examples, option tables, and target shortcuts.
+Visit the [**Documentation Index**](documentation/README.md) for full examples, option tables, and target shortcuts.
 
 ---
 
