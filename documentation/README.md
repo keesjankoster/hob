@@ -16,7 +16,7 @@ Explore the documentation for each command:
 | `hob create lwc <name>`        | Generate an LWC bundle with automated `js-meta.xml` targets | [⚡ Scaffolding Lightning Web Components](create-lwc.md) |
 | `hob create apex <name>`       | Create an Apex class with optional companion test class     | [🧪 Scaffolding Apex Classes](create-apex.md)            |
 | `hob create trigger <sobject>` | Create a trigger and separation-of-concerns handler class   | [🎯 Scaffolding Triggers & Handlers](create-trigger.md)  |
-| `hob hearth [alias]`           | Light the hearth: Authorize Dev Hub and set as default      | [🕯️ Lighting the Hearth (Dev Hub)](hearth.md)           |
+| `hob hearth [alias]`           | Light, inspect, or sweep the hearth (Dev Hub management)    | [🕯️ The Hearth (Dev Hub)](hearth.md)                    |
 
 ---
 

@@ -48,7 +48,7 @@ Detailed guides and flag references have been moved to the [**Documentation**](d
 - ⚡ [**Scaffolding Lightning Web Components**](documentation/create-lwc.md) (`hob create lwc <name> [--target record,app]`)
 - 🧪 [**Scaffolding Apex Classes**](documentation/create-apex.md) (`hob create apex <name> [--with-test]`)
 - 🎯 [**Scaffolding Triggers & Handlers**](documentation/create-trigger.md) (`hob create trigger <sobject>`)
-- 🕯️ [**Lighting the Hearth (Dev Hub)**](documentation/hearth.md) (`hob hearth [alias]`)
+- 🕯️ [**The Hearth (Dev Hub Management)**](documentation/hearth.md) (`hob hearth [alias]`)
 
 Visit the [**Documentation Index**](documentation/README.md) for full examples, option tables, and target shortcuts.
 
