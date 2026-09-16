@@ -15,6 +15,7 @@ hob create apex <name> [--with-test] [options]
 Hob scaffolds both `<name>.cls` and `<name>.cls-meta.xml`, automatically setting the API version from your `sfdx-project.json`.
 
 When the `--with-test` flag is passed, Hob also scaffolds `<name>Test.cls` and `<name>Test.cls-meta.xml`, pre-populated with:
+
 - `@IsTest` annotation
 - `@TestSetup static void makeData()` method for clean data setup
 - Positive and negative test case templates
@@ -39,8 +40,8 @@ hob create apex OrderService --with-test -d ./classes
 
 ## ⚙️ Options
 
-| Option | Shorthand | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `--with-test` | | `false` | Scaffold companion test class with `@TestSetup` & `Assert.*` |
-| `--output-dir <dir>` | `-d` | `force-app/main/default/classes` | Directory for saving the created class |
-| `--help` | `-h` | | Display help for the command |
+| Option               | Shorthand | Default                          | Description                                                  |
+| :------------------- | :-------- | :------------------------------- | :----------------------------------------------------------- |
+| `--with-test`        |           | `false`                          | Scaffold companion test class with `@TestSetup` & `Assert.*` |
+| `--output-dir <dir>` | `-d`      | `force-app/main/default/classes` | Directory for saving the created class                       |
+| `--help`             | `-h`      |                                  | Display help for the command                                 |
