@@ -1,5 +1,8 @@
 import { Command } from "commander";
 import { registerCreateProjectCommand } from "./project.js";
+import { registerCreateLwcCommand } from "./lwc.js";
+import { registerCreateApexCommand } from "./apex.js";
+import { registerCreateTriggerCommand } from "./trigger.js";
 
 export function registerCreateCommand(program: Command): void {
   const createCmd = program
@@ -7,4 +10,8 @@ export function registerCreateCommand(program: Command): void {
     .description("Scaffold new Salesforce resources and projects");
 
   registerCreateProjectCommand(createCmd);
+  registerCreateLwcCommand(createCmd);
+  registerCreateApexCommand(createCmd);
+  registerCreateTriggerCommand(createCmd);
 }
+

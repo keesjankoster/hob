@@ -80,6 +80,86 @@ hob create project quick-poc --no-manifest
 
 ---
 
+### ⚡ Scaffolding Lightning Web Components
+
+Generate an LWC bundle with automatically populated `js-meta.xml` targets—no manual XML editing required:
+
+```bash
+hob create lwc <name> [--target record,app]
+```
+
+#### Examples
+
+```bash
+# Generate component targeting record pages and app pages
+hob create lwc contactCard --target record,app
+
+# Target home pages and flow screens
+hob create lwc greetingBanner --target home,flow
+
+# Specify custom output directory
+hob create lwc customModal -d ./my-components
+```
+
+#### Target Shortcuts
+
+| Shortcut | Salesforce Target |
+| :--- | :--- |
+| `record` | `lightning__RecordPage` |
+| `app` | `lightning__AppPage` |
+| `home` | `lightning__HomePage` |
+| `community` | `lightningCommunity__Page` |
+| `flow` | `lightning__FlowScreen` |
+| `tab` | `lightning__Tab` |
+| `quickaction` / `action` | `lightning__RecordAction` |
+| `inbox` | `lightning__Inbox` |
+
+---
+
+### 🧪 Scaffolding Apex Classes
+
+Create an Apex class with an optional companion test class pre-populated with `@IsTest`, `@TestSetup`, and modern `Assert.*` boilerplate:
+
+```bash
+hob create apex <name> [--with-test]
+```
+
+#### Examples
+
+```bash
+# Generate standalone Apex class
+hob create apex OrderService
+
+# Generate Apex class with companion test class
+hob create apex OrderService --with-test
+```
+
+---
+
+### 🎯 Scaffolding Triggers & Handlers
+
+Generate both an Apex trigger and a corresponding `TriggerHandler` class following clean Separation of Concerns:
+
+```bash
+hob create trigger <sobject>
+```
+
+#### Examples
+
+```bash
+# Standard object trigger & handler
+hob create trigger Account
+# Generates AccountTrigger.trigger and AccountTriggerHandler.cls
+
+# Custom object trigger & handler
+hob create trigger Invoice__c
+# Generates InvoiceTrigger.trigger and InvoiceTriggerHandler.cls
+```
+
+The generated trigger automatically delegates to the handler using Salesforce's native `System.TriggerOperation` enum (`switch on Trigger.operationType`), providing dedicated methods for each trigger event (`onBeforeInsert`, `onAfterUpdate`, etc.).
+
+---
+
 ## 📦 Scripts
 
 - `npm run build`: Bundles the TypeScript CLI using `tsup` into `dist/`.
