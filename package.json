@@ -1,0 +1,41 @@
+{
+  "name": "hob",
+  "version": "0.1.0",
+  "description": "The Salesforce House-Elf - A developer CLI for Salesforce and Git workflows",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "hob": "./bin/hob.js"
+  },
+  "files": [
+    "dist",
+    "bin"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "start": "node bin/hob.js"
+  },
+  "keywords": [
+    "salesforce",
+    "sfdx",
+    "cli",
+    "git",
+    "productivity",
+    "developer-tools"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^13.1.0",
+    "execa": "^9.5.2",
+    "ora": "^8.2.0",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.9",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.2"
+  }
+}
