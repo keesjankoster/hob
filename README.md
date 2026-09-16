@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Salesforce.svg" alt="Salesforce" width="70" height="70" />
-</p>
-
 <h1 align="center">🧙‍♂️ Hob: The Salesforce House-Elf 🧦</h1>
 
 <p align="center">
