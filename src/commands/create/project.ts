@@ -4,7 +4,8 @@ import { Command } from "commander";
 import pc from "picocolors";
 import ora from "ora";
 import { logger } from "../../utils/logger.js";
-import { commandExists, runCommand } from "../../utils/runner.js";
+import { ensureCommand, commandExists, runCommand } from "../../utils/runner.js";
+import { DEFAULT_PACKAGE_DIR } from "../../constants.js";
 
 interface CreateProjectOptions {
   template: string;
@@ -22,7 +23,7 @@ export function registerCreateProjectCommand(parentCommand: Command): void {
     .argument("<name>", "Name of the Salesforce DX project")
     .option("-t, --template <template>", "Template to use (standard, empty, analytics, etc.)", "standard")
     .option("-d, --output-dir <dir>", "Directory for saving the created project", ".")
-    .option("-p, --default-package-dir <dir>", "Default package directory name", "force-app")
+    .option("-p, --default-package-dir <dir>", "Default package directory name", DEFAULT_PACKAGE_DIR)
     .option("-s, --namespace <namespace>", "Namespace associated with this project")
     .option("--manifest", "Generate a manifest (package.xml)", true)
     .option("--no-manifest", "Do not generate a manifest (package.xml)")
@@ -38,13 +39,7 @@ export function registerCreateProjectCommand(parentCommand: Command): void {
         process.exit(1);
       }
 
-      // Verify sf is installed
-      const hasSf = await commandExists("sf");
-      if (!hasSf) {
-        logger.error("The Salesforce CLI ('sf') is not found in your PATH.");
-        logger.info("Please install it via: npm install -g @salesforce/cli");
-        process.exit(1);
-      }
+      await ensureCommand("sf", "Please install it via: npm install -g @salesforce/cli");
 
       // Step 1: Scaffold SFDX Project
       const totalSteps = options.git ? 2 : 1;
@@ -124,7 +119,7 @@ export function registerCreateProjectCommand(parentCommand: Command): void {
       console.log();
       console.log(pc.bold("Next steps:"));
       console.log(`  ${pc.cyan(`cd ${options.outputDir === "." ? name : path.join(options.outputDir, name)}`)}`);
-      console.log(`  ${pc.cyan("sf org login web")} ${pc.dim("(or authorize your target org)")}`);
+      console.log(`  ${pc.cyan("hob hearth")} ${pc.dim("(light and authorize your Dev Hub)")}`);
       console.log();
     });
 }

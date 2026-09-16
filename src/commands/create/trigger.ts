@@ -4,27 +4,13 @@ import { Command } from "commander";
 import pc from "picocolors";
 import { logger } from "../../utils/logger.js";
 import { getSfdxProjectInfo } from "../../utils/sfdx.js";
+import { normalizeSObjectName, deriveBaseName } from "../../utils/strings.js";
+import { generateApexClassMeta, generateApexTriggerMeta } from "../../utils/xml.js";
 
 interface CreateTriggerOptions {
   name?: string;
   triggerDir?: string;
   classDir?: string;
-}
-
-function normalizeSObjectName(input: string): string {
-  if (input.endsWith("__c")) {
-    const base = input.slice(0, -3);
-    return base.charAt(0).toUpperCase() + base.slice(1) + "__c";
-  }
-  return input.charAt(0).toUpperCase() + input.slice(1);
-}
-
-function deriveBaseName(sobject: string): string {
-  if (sobject.endsWith("__c")) {
-    const base = sobject.slice(0, -3);
-    return base.charAt(0).toUpperCase() + base.slice(1);
-  }
-  return sobject.charAt(0).toUpperCase() + sobject.slice(1);
 }
 
 export function registerCreateTriggerCommand(parentCommand: Command): void {
@@ -91,15 +77,8 @@ export function registerCreateTriggerCommand(parentCommand: Command): void {
 }
 `;
 
-      const triggerMetaContent = `<?xml version="1.0" encoding="UTF-8"?>
-<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>${apiVersion}</apiVersion>
-    <status>Active</status>
-</ApexTrigger>
-`;
-
       fs.writeFileSync(triggerFile, triggerContent, "utf-8");
-      fs.writeFileSync(triggerMetaFile, triggerMetaContent, "utf-8");
+      fs.writeFileSync(triggerMetaFile, generateApexTriggerMeta(apiVersion), "utf-8");
       logger.success(`Created Apex trigger '${pc.bold(triggerName)}'`);
 
       // 2. Generate TriggerHandler class
@@ -164,15 +143,8 @@ export function registerCreateTriggerCommand(parentCommand: Command): void {
 }
 `;
 
-      const handlerMetaContent = `<?xml version="1.0" encoding="UTF-8"?>
-<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>${apiVersion}</apiVersion>
-    <status>Active</status>
-</ApexClass>
-`;
-
       fs.writeFileSync(handlerFile, handlerContent, "utf-8");
-      fs.writeFileSync(handlerMetaFile, handlerMetaContent, "utf-8");
+      fs.writeFileSync(handlerMetaFile, generateApexClassMeta(apiVersion), "utf-8");
       logger.success(`Created TriggerHandler class '${pc.bold(handlerName)}'`);
 
       console.log();

@@ -4,24 +4,12 @@ import { Command } from "commander";
 import pc from "picocolors";
 import { logger } from "../../utils/logger.js";
 import { getSfdxProjectInfo } from "../../utils/sfdx.js";
+import { toPascalCase } from "../../utils/strings.js";
+import { generateApexClassMeta } from "../../utils/xml.js";
 
 interface CreateApexOptions {
   withTest?: boolean;
   outputDir?: string;
-}
-
-function toPascalCase(str: string): string {
-  if (!str) return "";
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-function generateClassMetaXml(apiVersion: string): string {
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>${apiVersion}</apiVersion>
-    <status>Active</status>
-</ApexClass>
-`;
 }
 
 export function registerCreateApexCommand(parentCommand: Command): void {
@@ -61,7 +49,7 @@ export function registerCreateApexCommand(parentCommand: Command): void {
 }
 `;
       fs.writeFileSync(classFilePath, classContent, "utf-8");
-      fs.writeFileSync(metaFilePath, generateClassMetaXml(apiVersion), "utf-8");
+      fs.writeFileSync(metaFilePath, generateApexClassMeta(apiVersion), "utf-8");
 
       logger.success(`Created Apex class '${pc.bold(name)}'`);
 
@@ -104,7 +92,7 @@ private class ${testName} {
 }
 `;
           fs.writeFileSync(testFilePath, testContent, "utf-8");
-          fs.writeFileSync(testMetaFilePath, generateClassMetaXml(apiVersion), "utf-8");
+          fs.writeFileSync(testMetaFilePath, generateApexClassMeta(apiVersion), "utf-8");
           testFilesCreated.push(`${testName}.cls`);
           logger.success(`Created companion test class '${pc.bold(testName)}'`);
         }

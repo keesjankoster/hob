@@ -1,4 +1,5 @@
 import { execa } from "execa";
+import { logger } from "./logger.js";
 
 export interface RunOptions {
   cwd?: string;
@@ -13,6 +14,20 @@ export async function commandExists(command: string): Promise<boolean> {
     return true;
   } catch {
     return false;
+  }
+}
+
+export async function ensureCommand(
+  command: string,
+  installHint?: string
+): Promise<void> {
+  const exists = await commandExists(command);
+  if (!exists) {
+    logger.error(`Required tool '${command}' was not found in your PATH.`);
+    if (installHint) {
+      logger.info(installHint);
+    }
+    process.exit(1);
   }
 }
 

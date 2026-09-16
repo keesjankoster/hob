@@ -1,5 +1,6 @@
 import path from "node:path";
 import fs from "node:fs";
+import { DEFAULT_API_VERSION, DEFAULT_PACKAGE_DIR } from "../constants.js";
 
 export interface SfdxProjectInfo {
   isSfdxProject: boolean;
@@ -40,13 +41,13 @@ export function findSfdxProjectRoot(startDir: string = process.cwd()): string | 
  */
 export function getSfdxProjectInfo(startDir: string = process.cwd()): SfdxProjectInfo {
   const root = findSfdxProjectRoot(startDir);
-  const fallbackApiVersion = "63.0";
+  const fallbackApiVersion = DEFAULT_API_VERSION;
 
   if (!root) {
     return {
       isSfdxProject: false,
       projectRoot: process.cwd(),
-      defaultPackageDir: "force-app",
+      defaultPackageDir: DEFAULT_PACKAGE_DIR,
       apiVersion: fallbackApiVersion,
       paths: {
         classes: path.resolve(process.cwd(), "classes"),
@@ -56,7 +57,7 @@ export function getSfdxProjectInfo(startDir: string = process.cwd()): SfdxProjec
     };
   }
 
-  let defaultPackageDir = "force-app";
+  let defaultPackageDir = DEFAULT_PACKAGE_DIR;
   let apiVersion = fallbackApiVersion;
 
   try {

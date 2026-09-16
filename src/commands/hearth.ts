@@ -2,7 +2,8 @@ import { Command } from "commander";
 import pc from "picocolors";
 import ora from "ora";
 import { logger } from "../utils/logger.js";
-import { commandExists, runCommand } from "../utils/runner.js";
+import { ensureCommand, runCommand } from "../utils/runner.js";
+import { DEFAULT_DEVHUB_ALIAS } from "../constants.js";
 
 export interface HearthOptions {
   list?: boolean;
@@ -21,6 +22,11 @@ interface DevHubOrg {
   connectedStatus?: string;
 }
 
+function pad(text: string, width: number, style?: (s: string) => string): string {
+  const padded = text.padEnd(width);
+  return style ? style(padded) : padded;
+}
+
 async function handleListHearths(): Promise<void> {
   const spinner = ora({
     text: "Hob is checking the hearths...",
@@ -36,7 +42,7 @@ async function handleListHearths(): Promise<void> {
 
     if (devHubs.length === 0) {
       logger.info("No hearths (Dev Hubs) found.");
-      logger.elf("Light one with: " + pc.cyan("hob hearth [alias]"));
+      logger.elf("Light one with: " + pc.cyan(`hob hearth [alias]`));
       console.log();
       return;
     }
@@ -45,25 +51,30 @@ async function handleListHearths(): Promise<void> {
     logger.elf("Hob found the following hearths (Dev Hubs):");
     console.log();
 
-    // Table header
+    // Table headers
     const colAlias = "Alias".padEnd(16);
-    const colDefault = "Default".padEnd(10);
-    const colStatus = "Status".padEnd(14);
+    const colDefault = "Default".padEnd(12);
+    const colStatus = "Status".padEnd(16);
     const colOrgId = "Org Id".padEnd(20);
     const colUsername = "Username";
 
     console.log(pc.bold(pc.cyan(`  ${colAlias}${colDefault}${colStatus}${colOrgId}${colUsername}`)));
-    console.log(pc.dim(`  ${"─".repeat(14)}  ${"─".repeat(8)}  ${"─".repeat(12)}  ${"─".repeat(18)}  ${"─".repeat(30)}`));
+    console.log(pc.dim(`  ${"─".repeat(14)}  ${"─".repeat(10)}  ${"─".repeat(14)}  ${"─".repeat(18)}  ${"─".repeat(30)}`));
 
     for (const hub of devHubs) {
-      const alias = (hub.alias || pc.dim("(none)")).padEnd(16);
-      const isDefault = hub.isDefaultDevHubUsername
-        ? pc.green("🔥 yes").padEnd(19) // picocolors adds invisible ANSI characters so pad appropriately
-        : pc.dim("no").padEnd(10);
-      const status = hub.connectedStatus === "Connected"
-        ? pc.green("Connected").padEnd(23)
-        : pc.yellow(hub.connectedStatus || "Unknown").padEnd(23);
-      const orgId = hub.orgId.padEnd(20);
+      const alias = pad(hub.alias || "(none)", 16, hub.alias ? undefined : pc.dim);
+      const isDefault = pad(
+        hub.isDefaultDevHubUsername ? "🔥 yes" : "no",
+        12,
+        hub.isDefaultDevHubUsername ? pc.green : pc.dim
+      );
+      const isConnected = hub.connectedStatus === "Connected";
+      const status = pad(
+        hub.connectedStatus || "Unknown",
+        16,
+        isConnected ? pc.green : pc.yellow
+      );
+      const orgId = pad(hub.orgId, 20);
       const username = pc.white(hub.username);
 
       console.log(`  ${alias}${isDefault}${status}${orgId}${username}`);
@@ -108,18 +119,13 @@ export function registerHearthCommand(program: Command): void {
     .option("-l, --list", "List all authorized Dev Hub hearths")
     .option("-c, --clean", "Sweep the hearth: remove inactive/expired scratch org authorizations")
     .option("-p, --no-prompt", "Do not prompt for confirmation when sweeping the hearth", true)
-    .option("-a, --alias <alias>", "Alias for the Dev Hub org when lighting (default: devhub)")
+    .option("-a, --alias <alias>", `Alias for the Dev Hub org when lighting (default: ${DEFAULT_DEVHUB_ALIAS})`)
     .option("-r, --instance-url <url>", "URL of the instance (default: https://login.salesforce.com)")
     .option("-b, --browser <browser>", "Browser to use (chrome, edge, firefox)")
     .action(async (positionalAlias: string | undefined, options: HearthOptions) => {
       logger.banner();
 
-      const hasSf = await commandExists("sf");
-      if (!hasSf) {
-        logger.error("The Salesforce CLI ('sf') is not found in your PATH.");
-        logger.info("Please install it via: npm install -g @salesforce/cli");
-        process.exit(1);
-      }
+      await ensureCommand("sf", "Please install it via: npm install -g @salesforce/cli");
 
       // Check if user requested listing
       if (options.list || positionalAlias === "list") {
@@ -134,7 +140,7 @@ export function registerHearthCommand(program: Command): void {
       }
 
       // Otherwise: Light the hearth (authorize Dev Hub)
-      const alias = options.alias || positionalAlias || "devhub";
+      const alias = options.alias || positionalAlias || DEFAULT_DEVHUB_ALIAS;
 
       logger.elf(`Hob is tending the hearth: opening your browser to authorize Dev Hub '${pc.bold(alias)}'...`);
       console.log();

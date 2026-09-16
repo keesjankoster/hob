@@ -4,6 +4,8 @@ import { Command } from "commander";
 import pc from "picocolors";
 import { logger } from "../../utils/logger.js";
 import { getSfdxProjectInfo } from "../../utils/sfdx.js";
+import { toPascalCase, toTitleCase } from "../../utils/strings.js";
+import { generateLwcBundleMeta } from "../../utils/xml.js";
 
 const TARGET_MAP: Record<string, string> = {
   record: "lightning__RecordPage",
@@ -22,18 +24,6 @@ interface CreateLwcOptions {
   outputDir?: string;
   description?: string;
   masterLabel?: string;
-}
-
-function toPascalCase(str: string): string {
-  if (!str) return "";
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-function toTitleCase(str: string): string {
-  return str
-    .replace(/([A-Z])/g, " $1")
-    .replace(/^./, (s) => s.toUpperCase())
-    .trim();
 }
 
 function resolveTargets(targetInput?: string): string[] {
@@ -111,22 +101,14 @@ export default class ${pascalName} extends LightningElement {
 `;
       fs.writeFileSync(path.join(componentDir, `${name}.html`), htmlContent, "utf-8");
 
-      // 3. Generate js-meta.xml file
-      let targetsXml = "";
-      if (targets.length > 0) {
-        targetsXml = `\n    <targets>\n${targets
-          .map((target) => `        <target>${target}</target>`)
-          .join("\n")}\n    </targets>`;
-      }
-
-      const metaXmlContent = `<?xml version="1.0" encoding="UTF-8"?>
-<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>${apiVersion}</apiVersion>
-    <isExposed>${isExposed}</isExposed>
-    <masterLabel>${masterLabel}</masterLabel>
-    <description>${description}</description>${targetsXml}
-</LightningComponentBundle>
-`;
+      // 3. Generate js-meta.xml file using shared XML generator
+      const metaXmlContent = generateLwcBundleMeta({
+        apiVersion,
+        isExposed,
+        masterLabel,
+        description,
+        targets
+      });
       fs.writeFileSync(path.join(componentDir, `${name}.js-meta.xml`), metaXmlContent, "utf-8");
 
       logger.success(`Created Lightning Web Component '${pc.bold(name)}'`);
