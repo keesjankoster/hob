@@ -8,7 +8,8 @@ import {
   deriveBaseName,
   normalizeCustomObjectName,
   pluralize,
-  toTitleCase
+  toTitleCase,
+  isValidSObjectName
 } from "../../utils/strings.js";
 import { generateCustomObjectMeta } from "../../utils/xml.js";
 
@@ -49,6 +50,13 @@ export function registerCreateObjectCommand(parentCommand: Command): void {
     .option("-o, --output-dir <dir>", "Directory for saving the object bundle")
     .action(async (rawName: string, options: CreateObjectOptions) => {
       logger.banner();
+
+      if (!isValidSObjectName(rawName)) {
+        logger.error(
+          `Invalid custom object name '${rawName}'. Must start with a letter and contain only alphanumeric characters and underscores (e.g. Property, Expense__c).`
+        );
+        process.exit(1);
+      }
 
       const objectApiName = normalizeCustomObjectName(rawName);
       const baseName = deriveBaseName(objectApiName);

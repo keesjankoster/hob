@@ -6,6 +6,7 @@ import ora from "ora";
 import { logger } from "../../utils/logger.js";
 import { ensureCommand, commandExists, runCommand } from "../../utils/runner.js";
 import { DEFAULT_PACKAGE_DIR } from "../../constants.js";
+import { isValidProjectName } from "../../utils/strings.js";
 
 interface CreateProjectOptions {
   template: string;
@@ -31,6 +32,13 @@ export function registerCreateProjectCommand(parentCommand: Command): void {
     .option("--no-git", "Do not initialize a git repository")
     .action(async (name: string, options: CreateProjectOptions) => {
       logger.banner();
+
+      if (!isValidProjectName(name)) {
+        logger.error(
+          `Invalid project name '${name}'. Must be a valid folder name without path traversal characters.`
+        );
+        process.exit(1);
+      }
 
       const projectTargetDir = path.resolve(process.cwd(), options.outputDir, name);
 

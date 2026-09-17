@@ -10,7 +10,9 @@ import {
   normalizeCustomObjectName,
   normalizeFieldName,
   pluralize,
-  toTitleCase
+  toTitleCase,
+  isValidSObjectName,
+  isValidSalesforceIdentifier
 } from "../../utils/strings.js";
 import { CustomFieldType, generateCustomFieldMeta } from "../../utils/xml.js";
 
@@ -53,25 +55,25 @@ export function registerCreateFieldCommand(parentCommand: Command): void {
   parentCommand
     .command("field")
     .description("Scaffold a Salesforce Custom Field with XML metadata")
-    .argument("<object>", "Target sObject API name (e.g. Account, Property__c, Expense)")
-    .argument("<name>", "API name of the field (e.g. Amount, Status__c, Category)")
+    .argument("<object>", "Target sObject or Custom Metadata Type (e.g. Property__c, Account)")
+    .argument("<name>", "Developer/API name of the custom field (e.g. Price, Status__c)")
     .option(
       "-t, --type <type>",
       `Field type (${VALID_FIELD_TYPES.join(", ")})`,
       "Text"
     )
-    .option("-l, --label <label>", "UI label for the custom field")
+    .option("-l, --label <label>", "User-facing label for the field")
     .option("-d, --description <desc>", "Description of the field")
-    .option("--help-text <text>", "Inline help text for users")
-    .option("-r, --required", "Mark field as required", false)
-    .option("--unique", "Mark field as unique", false)
-    .option("--external-id", "Mark field as an external ID", false)
-    .option("--length <length>", "Length for Text (default: 255) or LongTextArea (default: 32768)")
-    .option("--precision <precision>", "Precision for Number, Currency, or Percent (default: 18)")
-    .option("--scale <scale>", "Scale (decimal places) for Number, Currency, or Percent (default: 2)")
+    .option("--help-text <help>", "Inline help text")
+    .option("--required", "Mark field as required")
+    .option("--unique", "Enforce unique values")
+    .option("--external-id", "Mark field as an External ID")
+    .option("--length <len>", "Field length for Text or LongTextArea")
+    .option("--precision <prec>", "Total digits for Number, Currency, Percent")
+    .option("--scale <scale>", "Decimal places for Number, Currency, Percent")
     .option(
-      "--values <values...>",
-      "Picklist values (space or comma separated)"
+      "-v, --values <values...>",
+      "Comma-separated list of picklist values for Picklist fields"
     )
     .option("--reference-to <object>", "Target sObject for Lookup fields (e.g. Contact, Account)")
     .option("--relationship-name <name>", "Relationship name for Lookup fields")
@@ -80,6 +82,34 @@ export function registerCreateFieldCommand(parentCommand: Command): void {
     .option("-o, --output-dir <dir>", "Directory for saving the field metadata")
     .action(async (rawObject: string, rawName: string, options: CreateFieldOptions) => {
       logger.banner();
+
+      if (!isValidSObjectName(rawObject)) {
+        logger.error(
+          `Invalid target object name '${rawObject}'. Must be a valid standard or custom sObject name (e.g. Property__c, Account).`
+        );
+        process.exit(1);
+      }
+
+      if (!isValidSObjectName(rawName)) {
+        logger.error(
+          `Invalid field name '${rawName}'. Must start with a letter and contain only alphanumeric characters and underscores (e.g. Price, Status__c).`
+        );
+        process.exit(1);
+      }
+
+      if (options.referenceTo && !isValidSObjectName(options.referenceTo)) {
+        logger.error(
+          `Invalid lookup target object '--reference-to ${options.referenceTo}'. Must be a valid sObject name.`
+        );
+        process.exit(1);
+      }
+
+      if (options.relationshipName && !isValidSalesforceIdentifier(options.relationshipName)) {
+        logger.error(
+          `Invalid relationship name '--relationship-name ${options.relationshipName}'. Must start with a letter and contain only alphanumeric characters and underscores.`
+        );
+        process.exit(1);
+      }
 
       const sfdxInfo = getSfdxProjectInfo();
       const baseObjectsDir = options.outputDir

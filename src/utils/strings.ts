@@ -100,3 +100,42 @@ const STANDARD_OBJECTS = new Set([
 export function isStandardObject(name: string): boolean {
   return STANDARD_OBJECTS.has(name);
 }
+
+/**
+ * Validates whether a string is a valid Salesforce identifier.
+ * Must start with an ASCII letter, followed by alphanumeric characters or underscores.
+ * Cannot contain path traversal characters (../), spaces, or symbols.
+ */
+export function isValidSalesforceIdentifier(str: string): boolean {
+  if (!str) return false;
+  return /^[a-zA-Z][a-zA-Z0-9_]*$/.test(str);
+}
+
+/**
+ * Validates an sObject, Custom Object, Custom Field, or Custom Metadata Type name.
+ * Allows standard names (Account) or custom names ending with __c or __mdt.
+ */
+export function isValidSObjectName(str: string): boolean {
+  if (!str) return false;
+  const base = deriveBaseName(str);
+  return isValidSalesforceIdentifier(base);
+}
+
+/**
+ * Validates a Lightning Web Component bundle name.
+ * LWC bundle names cannot contain underscores or hyphens, must start with an ASCII letter.
+ */
+export function isValidLwcName(str: string): boolean {
+  if (!str) return false;
+  return /^[a-zA-Z][a-zA-Z0-9]*$/.test(str);
+}
+
+/**
+ * Validates a Salesforce DX project name (directory name).
+ * Must be a safe directory name without path separators or traversal.
+ */
+export function isValidProjectName(str: string): boolean {
+  if (!str) return false;
+  return /^[a-zA-Z0-9][a-zA-Z0-9_-]*$/.test(str) && !str.includes("..");
+}
+

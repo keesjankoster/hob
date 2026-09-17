@@ -8,11 +8,13 @@ import {
   deriveBaseName,
   normalizeCmdtName,
   pluralize,
-  toTitleCase
+  toTitleCase,
+  isValidSObjectName,
+  isValidSalesforceIdentifier
 } from "../../utils/strings.js";
 import {
-  generateCustomMetadataRecordMeta,
-  generateCustomMetadataTypeMeta
+  generateCustomMetadataTypeMeta,
+  generateCustomMetadataRecordMeta
 } from "../../utils/xml.js";
 
 interface CreateCmdtOptions {
@@ -29,10 +31,10 @@ export function registerCreateCmdtCommand(parentCommand: Command): void {
     .command("cmdt")
     .alias("custom-metadata")
     .description("Scaffold a Custom Metadata Type (CMDT) and optional starter record")
-    .argument("<name>", "Developer/API name of the Custom Metadata Type (e.g. Discount_Rule, App_Config__mdt)")
-    .option("-l, --label <label>", "UI label for the custom metadata type")
+    .argument("<name>", "Developer/API name of the custom metadata type (e.g. App_Config, Feature_Flag__mdt)")
+    .option("-l, --label <label>", "Singular label for the custom metadata type")
     .option("-p, --plural-label <plural>", "Plural label for the custom metadata type")
-    .option("-d, --description <desc>", "Description of the metadata type")
+    .option("-d, --description <desc>", "Description of the custom metadata type")
     .option(
       "--visibility <visibility>",
       "Visibility (Public or Protected)",
@@ -45,6 +47,20 @@ export function registerCreateCmdtCommand(parentCommand: Command): void {
     .option("-o, --output-dir <dir>", "Directory for saving the object bundle")
     .action(async (rawName: string, options: CreateCmdtOptions) => {
       logger.banner();
+
+      if (!isValidSObjectName(rawName)) {
+        logger.error(
+          `Invalid Custom Metadata Type name '${rawName}'. Must start with a letter and contain only alphanumeric characters and underscores (e.g. App_Config, Feature_Flag__mdt).`
+        );
+        process.exit(1);
+      }
+
+      if (typeof options.withRecord === "string" && !isValidSalesforceIdentifier(options.withRecord)) {
+        logger.error(
+          `Invalid starter record name '${options.withRecord}'. Must start with a letter and contain only alphanumeric characters and underscores.`
+        );
+        process.exit(1);
+      }
 
       const cmdtApiName = normalizeCmdtName(rawName);
       const baseName = deriveBaseName(cmdtApiName);

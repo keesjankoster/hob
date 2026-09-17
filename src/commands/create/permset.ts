@@ -4,7 +4,7 @@ import { Command } from "commander";
 import pc from "picocolors";
 import { logger } from "../../utils/logger.js";
 import { getSfdxProjectInfo } from "../../utils/sfdx.js";
-import { deriveBaseName, toTitleCase } from "../../utils/strings.js";
+import { deriveBaseName, toTitleCase, isValidSalesforceIdentifier } from "../../utils/strings.js";
 import { generatePermissionSetMeta } from "../../utils/xml.js";
 
 interface CreatePermsetOptions {
@@ -38,6 +38,14 @@ export function registerCreatePermsetCommand(parentCommand: Command): void {
       logger.banner();
 
       const permsetName = rawName.replace(/\s+/g, "_");
+
+      if (!isValidSalesforceIdentifier(permsetName)) {
+        logger.error(
+          `Invalid permission set name '${rawName}'. Must start with a letter and contain only alphanumeric characters and underscores.`
+        );
+        process.exit(1);
+      }
+
       const baseName = deriveBaseName(permsetName);
       const label = options.label || toTitleCase(baseName);
 

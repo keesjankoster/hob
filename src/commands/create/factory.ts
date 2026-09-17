@@ -8,7 +8,9 @@ import {
   deriveBaseName,
   isStandardObject,
   normalizeCustomObjectName,
-  toPascalCase
+  toPascalCase,
+  isValidSObjectName,
+  isValidSalesforceIdentifier
 } from "../../utils/strings.js";
 import { generateApexClassMeta } from "../../utils/xml.js";
 
@@ -18,36 +20,25 @@ interface CreateFactoryOptions {
 }
 
 /**
- * Returns tailored default field initializations for popular standard and custom objects
+ * Generates initial field values boilerplate based on standard vs custom fields
  */
 function getDefaultFieldsCode(sobject: string, baseName: string): string {
-  switch (sobject.toLowerCase()) {
-    case "account":
-      return `Name = 'Test Account ' + index,
-            BillingCity = 'San Francisco',
-            BillingCountry = 'USA'`;
-    case "contact":
-      return `FirstName = 'Test',
-            LastName = 'Contact ' + index,
-            Email = 'test.contact' + index + '@example.com'`;
-    case "opportunity":
-      return `Name = 'Test Opportunity ' + index,
-            StageName = 'Prospecting',
-            CloseDate = Date.today().addDays(30),
-            Amount = 10000.00`;
-    case "case":
-      return `Subject = 'Test Case ' + index,
-            Status = 'New',
-            Origin = 'Web',
-            Priority = 'Medium'`;
-    case "lead":
-      return `FirstName = 'Test',
-            LastName = 'Lead ' + index,
-            Company = 'Acme Corp ' + index,
-            Status = 'Open - Not Contacted'`;
-    default:
-      return `Name = 'Test ${baseName} ' + index`;
+  if (sobject === "Account") {
+    return `            Name = 'Test ' + baseName + ' ' + index,\n            BillingCity = 'San Francisco',\n            BillingCountry = 'USA'`;
   }
+  if (sobject === "Contact") {
+    return `            FirstName = 'Test',\n            LastName = 'Contact ' + index,\n            Email = 'test' + index + '@example.com'`;
+  }
+  if (sobject === "Opportunity") {
+    return `            Name = 'Test Opportunity ' + index,\n            StageName = 'Prospecting',\n            CloseDate = Date.today().addDays(30),\n            Amount = 10000`;
+  }
+  if (sobject === "Case") {
+    return `            Subject = 'Test Case ' + index,\n            Status = 'New',\n            Origin = 'Web'`;
+  }
+  if (sobject.endsWith("__c")) {
+    return `            Name = 'Test ' + baseName + ' ' + index`;
+  }
+  return `            Name = 'Test ' + baseName + ' ' + index`;
 }
 
 export function registerCreateFactoryCommand(parentCommand: Command): void {
@@ -59,6 +50,20 @@ export function registerCreateFactoryCommand(parentCommand: Command): void {
     .option("-d, --output-dir <dir>", "Directory for saving the factory class")
     .action(async (rawSObject: string, options: CreateFactoryOptions) => {
       logger.banner();
+
+      if (!isValidSObjectName(rawSObject)) {
+        logger.error(
+          `Invalid sObject name '${rawSObject}'. Must be a valid standard or custom sObject name (e.g. Account, Property__c).`
+        );
+        process.exit(1);
+      }
+
+      if (options.name && !isValidSalesforceIdentifier(options.name)) {
+        logger.error(
+          `Invalid factory class name override '${options.name}'. Must start with a letter and contain only alphanumeric characters and underscores.`
+        );
+        process.exit(1);
+      }
 
       let sobject = rawSObject.trim();
       if (!isStandardObject(sobject) && !sobject.endsWith("__c") && !sobject.endsWith("__mdt")) {

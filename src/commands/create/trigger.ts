@@ -4,7 +4,12 @@ import { Command } from "commander";
 import pc from "picocolors";
 import { logger } from "../../utils/logger.js";
 import { getSfdxProjectInfo } from "../../utils/sfdx.js";
-import { normalizeSObjectName, deriveBaseName } from "../../utils/strings.js";
+import {
+  normalizeSObjectName,
+  deriveBaseName,
+  isValidSObjectName,
+  isValidSalesforceIdentifier
+} from "../../utils/strings.js";
 import { generateApexClassMeta, generateApexTriggerMeta } from "../../utils/xml.js";
 
 interface CreateTriggerOptions {
@@ -16,13 +21,29 @@ interface CreateTriggerOptions {
 export function registerCreateTriggerCommand(parentCommand: Command): void {
   parentCommand
     .command("trigger")
-    .description("Scaffold an Apex trigger and corresponding TriggerHandler with separation of concerns")
+    .description(
+      "Scaffold an Apex trigger and corresponding TriggerHandler with separation of concerns"
+    )
     .argument("<sobject>", "Salesforce Object name (e.g. 'Account', 'Contact', 'Invoice__c')")
     .option("-n, --name <name>", "Override the trigger name (default: <SObject>Trigger)")
     .option("--trigger-dir <dir>", "Directory for saving the created trigger")
     .option("--class-dir <dir>", "Directory for saving the created handler class")
     .action(async (rawSObject: string, options: CreateTriggerOptions) => {
       logger.banner();
+
+      if (!isValidSObjectName(rawSObject)) {
+        logger.error(
+          `Invalid sObject name '${rawSObject}'. Must be a valid standard or custom sObject name (e.g. Account, Property__c).`
+        );
+        process.exit(1);
+      }
+
+      if (options.name && !isValidSalesforceIdentifier(options.name)) {
+        logger.error(
+          `Invalid trigger name override '${options.name}'. Must start with a letter and contain only alphanumeric characters and underscores.`
+        );
+        process.exit(1);
+      }
 
       const sobject = normalizeSObjectName(rawSObject);
       const baseName = deriveBaseName(sobject);

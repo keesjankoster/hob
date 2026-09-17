@@ -4,7 +4,7 @@ import { Command } from "commander";
 import pc from "picocolors";
 import { logger } from "../../utils/logger.js";
 import { getSfdxProjectInfo } from "../../utils/sfdx.js";
-import { toPascalCase, toTitleCase } from "../../utils/strings.js";
+import { toPascalCase, toTitleCase, isValidLwcName } from "../../utils/strings.js";
 import { generateLwcBundleMeta } from "../../utils/xml.js";
 
 const TARGET_MAP: Record<string, string> = {
@@ -20,48 +20,57 @@ const TARGET_MAP: Record<string, string> = {
 };
 
 interface CreateLwcOptions {
-  target?: string;
+  target?: string | string[];
   outputDir?: string;
   description?: string;
   masterLabel?: string;
 }
 
-function resolveTargets(targetInput?: string): string[] {
-  if (!targetInput) return [];
+function resolveTargets(rawTargets?: string | string[]): string[] {
+  if (!rawTargets) return [];
 
-  const rawTargets = targetInput.split(",").map((t) => t.trim().toLowerCase());
-  const resolvedTargets: string[] = [];
+  const inputs = Array.isArray(rawTargets) ? rawTargets : [rawTargets];
+  const parsedTargets = inputs
+    .flatMap((t) => t.split(/[,\s]+/))
+    .map((t) => t.trim().toLowerCase())
+    .filter(Boolean);
 
-  for (const t of rawTargets) {
-    if (!t) continue;
+  const resolved = new Set<string>();
+
+  for (const t of parsedTargets) {
     if (TARGET_MAP[t]) {
-      resolvedTargets.push(TARGET_MAP[t]);
-    } else if (t.startsWith("lightning")) {
-      // If user typed the full target name, preserve it
-      resolvedTargets.push(t);
+      resolved.add(TARGET_MAP[t]);
+    } else if (t.startsWith("lightning__") || t.startsWith("lightningCommunity__")) {
+      resolved.add(t);
     } else {
-      logger.warn(`Unknown target shortcut '${t}'. Known shortcuts: ${Object.keys(TARGET_MAP).join(", ")}`);
+      logger.warn(`Unknown LWC target '${t}'. Valid shortcuts: ${Object.keys(TARGET_MAP).join(", ")}`);
     }
   }
 
-  // Deduplicate
-  return [...new Set(resolvedTargets)];
+  return Array.from(resolved);
 }
 
 export function registerCreateLwcCommand(parentCommand: Command): void {
   parentCommand
     .command("lwc")
     .description("Scaffold a Lightning Web Component with automated js-meta.xml targets")
-    .argument("<name>", "Name of the Lightning Web Component (camelCase)")
+    .argument("<name>", "Name of the component bundle (camelCase)")
     .option(
-      "-t, --target <targets>",
-      "Comma-separated targets (e.g. 'record,app', 'home', 'community', 'flow', 'tab')"
+      "-t, --target <targets...>",
+      "Target surfaces (record, app, home, flow, tab, quickaction, community, inbox)"
     )
     .option("-d, --output-dir <dir>", "Directory for saving the created component")
     .option("--description <desc>", "Component description")
     .option("--master-label <label>", "Master label for the component")
     .action(async (name: string, options: CreateLwcOptions) => {
       logger.banner();
+
+      if (!isValidLwcName(name)) {
+        logger.error(
+          `Invalid LWC component name '${name}'. Must start with a letter and contain only alphanumeric characters with no spaces, underscores, or path separators (e.g. accountCard, propertyTile).`
+        );
+        process.exit(1);
+      }
 
       const sfdxInfo = getSfdxProjectInfo();
       const targetDir = options.outputDir

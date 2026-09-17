@@ -4,7 +4,12 @@ import { Command } from "commander";
 import pc from "picocolors";
 import { logger } from "../../utils/logger.js";
 import { getSfdxProjectInfo } from "../../utils/sfdx.js";
-import { toPascalCase, normalizeSObjectName } from "../../utils/strings.js";
+import {
+  toPascalCase,
+  normalizeSObjectName,
+  isValidSalesforceIdentifier,
+  isValidSObjectName
+} from "../../utils/strings.js";
 import { generateApexClassMeta } from "../../utils/xml.js";
 
 interface CreateBatchOptions {
@@ -23,6 +28,20 @@ export function registerCreateBatchCommand(parentCommand: Command): void {
     .option("-d, --output-dir <dir>", "Directory for saving the created class")
     .action(async (rawName: string, options: CreateBatchOptions) => {
       logger.banner();
+
+      if (!isValidSalesforceIdentifier(rawName)) {
+        logger.error(
+          `Invalid Batchable Apex class name '${rawName}'. Must start with a letter and contain only alphanumeric characters and underscores.`
+        );
+        process.exit(1);
+      }
+
+      if (options.sobject && !isValidSObjectName(options.sobject)) {
+        logger.error(
+          `Invalid sObject name '${options.sobject}'. Must be a valid standard or custom sObject name (e.g. Account, Property__c).`
+        );
+        process.exit(1);
+      }
 
       const name = toPascalCase(rawName);
       const sobject = options.sobject ? normalizeSObjectName(options.sobject) : "Account";

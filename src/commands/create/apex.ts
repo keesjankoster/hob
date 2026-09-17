@@ -4,7 +4,7 @@ import { Command } from "commander";
 import pc from "picocolors";
 import { logger } from "../../utils/logger.js";
 import { getSfdxProjectInfo } from "../../utils/sfdx.js";
-import { toPascalCase } from "../../utils/strings.js";
+import { toPascalCase, isValidSalesforceIdentifier } from "../../utils/strings.js";
 import { generateApexClassMeta } from "../../utils/xml.js";
 
 interface CreateApexOptions {
@@ -21,6 +21,13 @@ export function registerCreateApexCommand(parentCommand: Command): void {
     .option("-d, --output-dir <dir>", "Directory for saving the created class")
     .action(async (rawName: string, options: CreateApexOptions) => {
       logger.banner();
+
+      if (!isValidSalesforceIdentifier(rawName)) {
+        logger.error(
+          `Invalid Apex class name '${rawName}'. Must start with a letter and contain only alphanumeric characters and underscores (e.g. MyService, OrderHelper).`
+        );
+        process.exit(1);
+      }
 
       const name = toPascalCase(rawName);
       const sfdxInfo = getSfdxProjectInfo();
