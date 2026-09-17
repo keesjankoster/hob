@@ -19,6 +19,8 @@ Explore the documentation for each command:
 | `hob create queueable <name>`  | Scaffold a Queueable Apex class with optional test class    | [⚡ Scaffolding Queueable Apex](create-queueable.md)     |
 | `hob create batch <name>`      | Scaffold a Batchable Apex class with optional test class    | [🔄 Scaffolding Batch Apex](create-batch.md)             |
 | `hob hearth [alias]`           | Light, inspect, or sweep the hearth (Dev Hub management)    | [🕯️ The Hearth (Dev Hub)](hearth.md)                    |
+| `hob scratch new [alias]`      | Full setup pipeline for scratch orgs (create, push, seed)   | [⚡ Scratch Orgs (Lifecycle & Purge)](scratch.md)        |
+| `hob scratch purge`            | Delete expired/active scratch orgs and keep Dev Hub clean   | [⚡ Scratch Orgs (Lifecycle & Purge)](scratch.md)        |
 
 ---
 

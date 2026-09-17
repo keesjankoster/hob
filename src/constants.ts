@@ -14,3 +14,9 @@ try {
 export const DEFAULT_API_VERSION = process.env.HOB_API_VERSION || "63.0";
 export const DEFAULT_PACKAGE_DIR = process.env.HOB_PACKAGE_DIR || "force-app";
 export const DEFAULT_DEVHUB_ALIAS = process.env.HOB_DEVHUB_ALIAS || "devhub";
+
+// Scratch org defaults
+export const DEFAULT_SCRATCH_DURATION = process.env.HOB_SCRATCH_DURATION || "7";
+export const DEFAULT_SCRATCH_DEF_PATH = process.env.HOB_SCRATCH_DEF_PATH || "config/project-scratch-def.json";
+export const DEFAULT_SCRATCH_PERMSETS = process.env.HOB_SCRATCH_PERMSETS || "";
+export const DEFAULT_SCRATCH_SEED_SCRIPT = process.env.HOB_SCRATCH_SEED_SCRIPT || "";
