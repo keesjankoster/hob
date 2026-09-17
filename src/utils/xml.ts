@@ -106,6 +106,8 @@ export type CustomFieldType =
   | "Phone"
   | "Url";
 
+export type DeleteConstraint = "SetNull" | "Restrict" | "Cascade";
+
 export interface CustomFieldOptions {
   fullName: string;
   label: string;
@@ -122,6 +124,7 @@ export interface CustomFieldOptions {
   referenceTo?: string;
   relationshipName?: string;
   relationshipLabel?: string;
+  deleteConstraint?: DeleteConstraint;
   defaultValue?: string;
 }
 
@@ -203,7 +206,8 @@ ${valueEntries}
       if (options.relationshipLabel) {
         lines.push(`    <relationshipLabel>${options.relationshipLabel}</relationshipLabel>`);
       }
-      lines.push(`    <deleteConstraint>SetNull</deleteConstraint>`);
+      const effectiveConstraint = options.deleteConstraint || (isRequired ? "Restrict" : "SetNull");
+      lines.push(`    <deleteConstraint>${effectiveConstraint}</deleteConstraint>`);
       break;
   }
 

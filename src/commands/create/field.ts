@@ -47,6 +47,7 @@ interface CreateFieldOptions {
   referenceTo?: string;
   relationshipName?: string;
   relationshipLabel?: string;
+  deleteConstraint?: string;
   defaultValue?: string;
   outputDir?: string;
 }
@@ -65,7 +66,7 @@ export function registerCreateFieldCommand(parentCommand: Command): void {
     .option("-l, --label <label>", "User-facing label for the field")
     .option("-d, --description <desc>", "Description of the field")
     .option("--help-text <help>", "Inline help text")
-    .option("--required", "Mark field as required")
+    .option("-r, --required", "Mark field as required")
     .option("--unique", "Enforce unique values")
     .option("--external-id", "Mark field as an External ID")
     .option("--length <len>", "Field length for Text or LongTextArea")
@@ -78,6 +79,10 @@ export function registerCreateFieldCommand(parentCommand: Command): void {
     .option("--reference-to <object>", "Target sObject for Lookup fields (e.g. Contact, Account)")
     .option("--relationship-name <name>", "Relationship name for Lookup fields")
     .option("--relationship-label <label>", "Relationship label for Lookup fields")
+    .option(
+      "--delete-constraint <constraint>",
+      "Delete constraint for Lookup fields: Restrict, SetNull, Cascade (default: Restrict if required, otherwise SetNull)"
+    )
     .option("--default-value <val>", "Default value (e.g. false for Checkbox)")
     .option("-o, --output-dir <dir>", "Directory for saving the field metadata")
     .action(async (rawObject: string, rawName: string, options: CreateFieldOptions) => {
@@ -180,6 +185,7 @@ export function registerCreateFieldCommand(parentCommand: Command): void {
       let referenceTo = options.referenceTo;
       let relationshipName = options.relationshipName;
       let relationshipLabel = options.relationshipLabel;
+      let deleteConstraint: "SetNull" | "Restrict" | "Cascade" | undefined;
 
       if (matchedType === "Lookup") {
         if (!referenceTo) {
@@ -191,6 +197,33 @@ export function registerCreateFieldCommand(parentCommand: Command): void {
         }
         if (!relationshipLabel) {
           relationshipLabel = toTitleCase(relationshipName);
+        }
+
+        if (options.deleteConstraint) {
+          const dcInput = options.deleteConstraint.trim().toLowerCase();
+          if (dcInput === "restrict") {
+            deleteConstraint = "Restrict";
+          } else if (dcInput === "setnull") {
+            deleteConstraint = "SetNull";
+          } else if (dcInput === "cascade") {
+            deleteConstraint = "Cascade";
+          } else {
+            logger.error(
+              `Invalid --delete-constraint '${options.deleteConstraint}'. Valid values: Restrict, SetNull, Cascade.`
+            );
+            process.exit(1);
+          }
+        }
+
+        if (options.required && deleteConstraint === "SetNull") {
+          logger.error(
+            `Invalid configuration: A required Lookup field cannot use '--delete-constraint SetNull'. Salesforce requires 'Restrict' (or Cascade delete for master-detail) because foreign keys cannot be set to null when the referenced record is deleted.`
+          );
+          process.exit(1);
+        }
+
+        if (!deleteConstraint) {
+          deleteConstraint = options.required ? "Restrict" : "SetNull";
         }
       }
 
@@ -210,6 +243,7 @@ export function registerCreateFieldCommand(parentCommand: Command): void {
         referenceTo,
         relationshipName,
         relationshipLabel,
+        deleteConstraint,
         defaultValue: options.defaultValue
       });
 
@@ -224,8 +258,11 @@ export function registerCreateFieldCommand(parentCommand: Command): void {
       console.log(`  ${pc.bold("Field:")}         ${pc.green(fieldApiName)}`);
       console.log(`  ${pc.bold("Label:")}         ${label}`);
       console.log(`  ${pc.bold("Type:")}          ${matchedType}`);
-      if (matchedType === "Lookup" && referenceTo) {
-        console.log(`  ${pc.bold("Lookup To:")}     ${referenceTo}`);
+      if (matchedType === "Lookup") {
+        if (referenceTo) {
+          console.log(`  ${pc.bold("Lookup To:")}     ${referenceTo}`);
+        }
+        console.log(`  ${pc.bold("Delete Action:")} ${deleteConstraint}`);
       }
       if (matchedType === "Picklist" && picklistValues.length > 0) {
         console.log(`  ${pc.bold("Values:")}        ${picklistValues.join(", ")}`);

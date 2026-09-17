@@ -39,8 +39,11 @@ hob create field Property Status -t Picklist --values "Available,Pending,Sold"
 # Checkbox with default value
 hob create field Property Is_Featured -t Checkbox --default-value true
 
-# Lookup relationship
+# Lookup relationship (defaults to SetNull for optional lookup)
 hob create field Property Account -t Lookup --reference-to Account
+
+# Required Lookup relationship (automatically defaults to Restrict delete)
+hob create field Appointment__c Customer -t Lookup --reference-to Contact -r
 
 # Long Text Area
 hob create field Property Description -t LongTextArea --length 4000
@@ -71,6 +74,7 @@ hob create field Property Listing_Date -t Date --required --help-text "Date the 
 | `--reference-to <object>` | | `Account` | Target sObject for Lookup fields |
 | `--relationship-name <name>` | | Plural object | Relationship name for Lookup fields |
 | `--relationship-label <label>`| | Plural object | Relationship label for Lookup fields |
+| `--delete-constraint <constraint>` | | `Restrict` / `SetNull` | Delete constraint for Lookup fields (`Restrict`, `SetNull`, `Cascade`). Defaults to `Restrict` if required, otherwise `SetNull`. |
 | `--default-value <val>` | | `false` | Default value (e.g. `true` or `false` for Checkbox) |
 | `-o, --output-dir <dir>` | `-o` | `.../default/objects` | Base objects directory |
 | `--help` | `-h` | | Display help for the command |
