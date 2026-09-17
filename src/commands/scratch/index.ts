@@ -1,6 +1,8 @@
 import { Command } from "commander";
 import { registerScratchNewCommand } from "./new.js";
 import { registerScratchPurgeCommand } from "./purge.js";
+import { registerScratchOpenCommand } from "./open.js";
+import { registerScratchDeployCommand } from "./deploy.js";
 
 export function registerScratchCommand(program: Command): void {
   const scratchCmd = program
@@ -9,4 +11,7 @@ export function registerScratchCommand(program: Command): void {
 
   registerScratchNewCommand(scratchCmd);
   registerScratchPurgeCommand(scratchCmd);
+  registerScratchOpenCommand(scratchCmd);
+  registerScratchDeployCommand(scratchCmd);
 }
+

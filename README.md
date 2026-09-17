@@ -56,7 +56,7 @@ Detailed guides and flag references have been moved to the [**Documentation**](d
 - ⚙️ [**Scaffolding Custom Metadata Types**](documentation/create-cmdt.md) (`hob create cmdt <name> [--with-record]`)
 - 🏭 [**Scaffolding Test Data Factories**](documentation/create-factory.md) (`hob create factory <sobject>`)
 - 🕯️ [**The Hearth (Dev Hub Management)**](documentation/hearth.md) (`hob hearth [alias]`)
-- ⚡ [**Scratch Orgs (Lifecycle & Purge)**](documentation/scratch.md) (`hob scratch new [alias]`, `hob scratch purge`)
+- ⚡ [**Scratch Orgs (Lifecycle, Purge, Open & Deploy)**](documentation/scratch.md) (`hob scratch new`, `hob open`, `hob deploy`, `hob scratch purge`)
 - 🧪 [**Running Apex Tests & Coverage**](documentation/test.md) (`hob test [class]`)
 - 🌱 [**Test Data Seeding & Scratch Plans**](documentation/seed.md) (`hob seed [file]`, `hob seed export`, `hob seed init`)
 

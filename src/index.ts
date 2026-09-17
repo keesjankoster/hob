@@ -7,6 +7,9 @@ import { registerHearthCommand } from "./commands/hearth.js";
 import { registerScratchCommand } from "./commands/scratch/index.js";
 import { registerTestCommand } from "./commands/test.js";
 import { registerSeedCommand } from "./commands/seed/index.js";
+import { handleScratchOpen, ScratchOpenOptions } from "./commands/scratch/open.js";
+import { handleScratchDeploy, ScratchDeployOptions } from "./commands/scratch/deploy.js";
+import { logger } from "./utils/logger.js";
 
 // Read version safely from package.json
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -34,6 +37,39 @@ registerHearthCommand(program);
 registerScratchCommand(program);
 registerTestCommand(program);
 registerSeedCommand(program);
+
+// Top-level shortcuts for frequent developer workflows
+program
+  .command("open [alias]")
+  .description("Open a scratch org (or default org) in your browser")
+  .option("-p, --path <path>", "Navigation URL path to open a specific page (e.g. lightning/o/Account/list)")
+  .option("-b, --browser <browser>", "Browser where the org opens (chrome, edge, firefox)")
+  .option("-r, --url-only", "Display navigation URL without launching the browser", false)
+  .option("--private", "Open the org in an incognito/private browser window", false)
+  .action(async (alias: string | undefined, options: ScratchOpenOptions) => {
+    logger.banner();
+    await handleScratchOpen(alias, options);
+  });
+
+program
+  .command("deploy [alias]")
+  .aliases(["push"])
+  .description("Deploy local source code and metadata changes into a scratch org")
+  .option("-d, --source-dir <dirs...>", "Path to local source files or directories to deploy")
+  .option("-m, --metadata <metadata...>", "Specific metadata components to deploy (e.g. ApexClass:MyClass)")
+  .option("-x, --manifest <file>", "Full file path for manifest (package.xml) of components to deploy")
+  .option("-c, --ignore-conflicts", "Ignore conflicts and force deploy local changes", false)
+  .option("--dry-run", "Validate deployment against the org without persisting changes", false)
+  .option(
+    "-l, --test-level <level>",
+    "Deployment Apex testing level (NoTestRun, RunSpecifiedTests, RunLocalTests, RunAllTestsInOrg)"
+  )
+  .option("-t, --tests <tests...>", "Apex tests to run when --test-level is RunSpecifiedTests")
+  .option("--concise", "Display concise deployment output", false)
+  .action(async (alias: string | undefined, options: ScratchDeployOptions) => {
+    logger.banner();
+    await handleScratchDeploy(alias, options);
+  });
 
 // Handle unknown commands gracefully
 program.on("command:*", (operands) => {
