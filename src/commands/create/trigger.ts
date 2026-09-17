@@ -16,7 +16,7 @@ interface CreateTriggerOptions {
 export function registerCreateTriggerCommand(parentCommand: Command): void {
   parentCommand
     .command("trigger")
-    .description("Generate an Apex trigger and corresponding TriggerHandler with separation of concerns")
+    .description("Scaffold an Apex trigger and corresponding TriggerHandler with separation of concerns")
     .argument("<sobject>", "Salesforce Object name (e.g. 'Account', 'Contact', 'Invoice__c')")
     .option("-n, --name <name>", "Override the trigger name (default: <SObject>Trigger)")
     .option("--trigger-dir <dir>", "Directory for saving the created trigger")

@@ -19,7 +19,7 @@ interface CreateProjectOptions {
 export function registerCreateProjectCommand(parentCommand: Command): void {
   parentCommand
     .command("project")
-    .description("Create a new Salesforce DX project")
+    .description("Scaffold a new Salesforce DX project")
     .argument("<name>", "Name of the Salesforce DX project")
     .option("-t, --template <template>", "Template to use (standard, empty, analytics, etc.)", "standard")
     .option("-d, --output-dir <dir>", "Directory for saving the created project", ".")
