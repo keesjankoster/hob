@@ -5,6 +5,10 @@ import { registerCreateApexCommand } from "./apex.js";
 import { registerCreateTriggerCommand } from "./trigger.js";
 import { registerCreateQueueableCommand } from "./queueable.js";
 import { registerCreateBatchCommand } from "./batch.js";
+import { registerCreateObjectCommand } from "./object.js";
+import { registerCreateFieldCommand } from "./field.js";
+import { registerCreatePermsetCommand } from "./permset.js";
+import { registerCreateCmdtCommand } from "./cmdt.js";
 
 export function registerCreateCommand(program: Command): void {
   const createCmd = program
@@ -17,5 +21,9 @@ export function registerCreateCommand(program: Command): void {
   registerCreateTriggerCommand(createCmd);
   registerCreateQueueableCommand(createCmd);
   registerCreateBatchCommand(createCmd);
+  registerCreateObjectCommand(createCmd);
+  registerCreateFieldCommand(createCmd);
+  registerCreatePermsetCommand(createCmd);
+  registerCreateCmdtCommand(createCmd);
 }
 

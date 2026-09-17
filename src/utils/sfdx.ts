@@ -11,6 +11,9 @@ export interface SfdxProjectInfo {
     classes: string;
     triggers: string;
     lwc: string;
+    objects: string;
+    permissionsets: string;
+    customMetadata: string;
   };
 }
 
@@ -52,7 +55,10 @@ export function getSfdxProjectInfo(startDir: string = process.cwd()): SfdxProjec
       paths: {
         classes: path.resolve(process.cwd(), "classes"),
         triggers: path.resolve(process.cwd(), "triggers"),
-        lwc: path.resolve(process.cwd(), "lwc")
+        lwc: path.resolve(process.cwd(), "lwc"),
+        objects: path.resolve(process.cwd(), "objects"),
+        permissionsets: path.resolve(process.cwd(), "permissionsets"),
+        customMetadata: path.resolve(process.cwd(), "customMetadata")
       }
     };
   }
@@ -90,7 +96,10 @@ export function getSfdxProjectInfo(startDir: string = process.cwd()): SfdxProjec
     paths: {
       classes: path.join(basePackagePath, "classes"),
       triggers: path.join(basePackagePath, "triggers"),
-      lwc: path.join(basePackagePath, "lwc")
+      lwc: path.join(basePackagePath, "lwc"),
+      objects: path.join(basePackagePath, "objects"),
+      permissionsets: path.join(basePackagePath, "permissionsets"),
+      customMetadata: path.join(basePackagePath, "customMetadata")
     }
   };
 }

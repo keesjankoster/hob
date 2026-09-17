@@ -50,6 +50,10 @@ Detailed guides and flag references have been moved to the [**Documentation**](d
 - 🎯 [**Scaffolding Triggers & Handlers**](documentation/create-trigger.md) (`hob create trigger <sobject>`)
 - ⚡ [**Scaffolding Queueable Apex**](documentation/create-queueable.md) (`hob create queueable <name> [--with-test]`)
 - 🔄 [**Scaffolding Batch Apex**](documentation/create-batch.md) (`hob create batch <name> [--sobject <sobject>] [--with-test]`)
+- 📦 [**Scaffolding Custom Objects**](documentation/create-object.md) (`hob create object <name>`)
+- 🏷️ [**Scaffolding Custom Fields**](documentation/create-field.md) (`hob create field <object> <name> [-t <type>]`)
+- 🛡️ [**Scaffolding Permission Sets**](documentation/create-permset.md) (`hob create permset <name>`)
+- ⚙️ [**Scaffolding Custom Metadata Types**](documentation/create-cmdt.md) (`hob create cmdt <name> [--with-record]`)
 - 🕯️ [**The Hearth (Dev Hub Management)**](documentation/hearth.md) (`hob hearth [alias]`)
 - ⚡ [**Scratch Orgs (Lifecycle & Purge)**](documentation/scratch.md) (`hob scratch new [alias]`, `hob scratch purge`)
 
