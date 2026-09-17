@@ -14,6 +14,7 @@ export interface ScratchPurgeOptions {
   noPrompt?: boolean;
   force?: boolean;
   dryRun?: boolean;
+  includeUnknown?: boolean;
 }
 
 interface DevHubOrg {
@@ -51,6 +52,11 @@ export function registerScratchPurgeCommand(scratchCmd: Command): void {
     .option("-p, --no-prompt", "Do not prompt for confirmation before deleting", false)
     .option("-f, --force", "Force deletion without prompt (same as --no-prompt)")
     .option("--dry-run", "Display scratch orgs that would be deleted without deleting them")
+    .option(
+      "--include-unknown",
+      "Include scratch orgs whose Dev Hub relationship is unconfirmed",
+      false
+    )
     .action(async (options: ScratchPurgeOptions) => {
       logger.banner();
 
@@ -105,14 +111,37 @@ export function registerScratchPurgeCommand(scratchCmd: Command): void {
       logger.elf(`Hob is examining scratch orgs linked to Dev Hub '${pc.bold(pc.cyan(hubDisplayName))}'...`);
       console.log();
 
-      // Filter scratch orgs linked to this Dev Hub
+      // Filter scratch orgs linked to this Dev Hub (strict, safe matching)
+      const unknownHubOrgs: ScratchOrgInfo[] = [];
       let linkedOrgs = allScratchOrgs.filter((org) => {
-        if (!org.devHubUsername) return true; // Include if unknown to be safe when devHub matches
-        return (
-          org.devHubUsername.toLowerCase() === hubIdentifier.toLowerCase() ||
-          (targetHub?.alias && org.devHubUsername.toLowerCase() === targetHub.alias.toLowerCase())
-        );
+        const matchesUsername =
+          org.devHubUsername &&
+          (org.devHubUsername.toLowerCase() === hubIdentifier.toLowerCase() ||
+            (targetHub?.alias && org.devHubUsername.toLowerCase() === targetHub.alias.toLowerCase()));
+
+        const matchesOrgId =
+          org.devHubOrgId && targetHub?.orgId && org.devHubOrgId.toLowerCase() === targetHub.orgId.toLowerCase();
+
+        if (matchesUsername || matchesOrgId) {
+          return true;
+        }
+
+        if (!org.devHubUsername && !org.devHubOrgId) {
+          unknownHubOrgs.push(org);
+          return Boolean(options.includeUnknown);
+        }
+
+        return false;
       });
+
+      if (unknownHubOrgs.length > 0 && !options.includeUnknown) {
+        logger.info(
+          pc.dim(
+            `Notice: Skipped ${unknownHubOrgs.length} scratch org(s) with unconfirmed Dev Hub ownership (use --include-unknown to include).`
+          )
+        );
+        console.log();
+      }
 
       // Filter by status if specified
       if (options.expiredOnly) {

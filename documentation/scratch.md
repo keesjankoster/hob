@@ -102,4 +102,9 @@ hob scratch purge -v my-devhub
 | `--no-prompt` | `-p` | `false` | Do not prompt for confirmation before deleting |
 | `--force` | `-f` | `false` | Force deletion without prompt (same as `--no-prompt`) |
 | `--dry-run` | | `false` | Display scratch orgs that would be deleted without deleting them |
+| `--include-unknown` | | `false` | Include scratch orgs whose Dev Hub relationship cannot be confirmed |
 | `--help` | `-h` | | Display help for the command |
+
+> [!TIP]
+> **Safety Guard**: `hob scratch purge` strictly checks both `devHubUsername` and `devHubOrgId` against the selected Dev Hub. Scratch orgs with unconfirmed Dev Hub ownership (e.g., from direct auth logins or other hubs) are safely skipped by default to prevent accidental data loss. Pass `--include-unknown` only if you explicitly intend to purge unlinked scratch orgs.
+
