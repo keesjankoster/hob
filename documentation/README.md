@@ -22,10 +22,12 @@ Explore the documentation for each command:
 | `hob create field <obj> <name>`| Scaffold a Custom Field with type-specific XML metadata     | [🏷️ Scaffolding Custom Fields](create-field.md)         |
 | `hob create permset <name>`    | Scaffold a Permission Set with object & class permissions   | [🛡️ Scaffolding Permission Sets](create-permset.md)     |
 | `hob create cmdt <name>`       | Scaffold a Custom Metadata Type & starter record            | [⚙️ Scaffolding Custom Metadata Types](create-cmdt.md)   |
+| `hob create factory <sobject>` | Scaffold an Apex Test Data Factory with build & create      | [🏭 Scaffolding Test Data Factories](create-factory.md)  |
 | `hob hearth [alias]`           | Light, inspect, or sweep the hearth (Dev Hub management)    | [🕯️ The Hearth (Dev Hub)](hearth.md)                    |
 | `hob scratch new [alias]`      | Full setup pipeline for scratch orgs (create, push, seed)   | [⚡ Scratch Orgs (Lifecycle & Purge)](scratch.md)        |
 | `hob scratch purge`            | Delete expired/active scratch orgs and keep Dev Hub clean   | [⚡ Scratch Orgs (Lifecycle & Purge)](scratch.md)        |
 | `hob test [class]`             | Run unit tests with formatted summaries & coverage bars     | [🧪 Running Apex Tests & Coverage](test.md)              |
+| `hob seed [file]`              | Seed test data, export lightweight JSON plans, init seeds   | [🌱 Test Data Seeding & Scratch Plans](seed.md)          |
 
 ---
 

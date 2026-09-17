@@ -24,3 +24,6 @@ export const DEFAULT_SCRATCH_SEED_SCRIPT = process.env.HOB_SCRATCH_SEED_SCRIPT |
 // Testing defaults
 export const DEFAULT_TEST_WAIT = process.env.HOB_TEST_WAIT || "10";
 export const DEFAULT_TEST_COVERAGE = process.env.HOB_TEST_COVERAGE !== "false";
+
+// Data Seeding defaults
+export const DEFAULT_SEED_DIR = process.env.HOB_SEED_DIR || "data";

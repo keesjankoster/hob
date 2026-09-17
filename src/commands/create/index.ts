@@ -9,6 +9,7 @@ import { registerCreateObjectCommand } from "./object.js";
 import { registerCreateFieldCommand } from "./field.js";
 import { registerCreatePermsetCommand } from "./permset.js";
 import { registerCreateCmdtCommand } from "./cmdt.js";
+import { registerCreateFactoryCommand } from "./factory.js";
 
 export function registerCreateCommand(program: Command): void {
   const createCmd = program
@@ -25,5 +26,6 @@ export function registerCreateCommand(program: Command): void {
   registerCreateFieldCommand(createCmd);
   registerCreatePermsetCommand(createCmd);
   registerCreateCmdtCommand(createCmd);
+  registerCreateFactoryCommand(createCmd);
 }
 
