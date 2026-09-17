@@ -56,6 +56,7 @@ Detailed guides and flag references have been moved to the [**Documentation**](d
 - ⚙️ [**Scaffolding Custom Metadata Types**](documentation/create-cmdt.md) (`hob create cmdt <name> [--with-record]`)
 - 🕯️ [**The Hearth (Dev Hub Management)**](documentation/hearth.md) (`hob hearth [alias]`)
 - ⚡ [**Scratch Orgs (Lifecycle & Purge)**](documentation/scratch.md) (`hob scratch new [alias]`, `hob scratch purge`)
+- 🧪 [**Running Apex Tests & Coverage**](documentation/test.md) (`hob test [class]`)
 
 Visit the [**Documentation Index**](documentation/README.md) for full examples, option tables, and target shortcuts.
 

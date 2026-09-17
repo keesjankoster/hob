@@ -20,3 +20,7 @@ export const DEFAULT_SCRATCH_DURATION = process.env.HOB_SCRATCH_DURATION || "7";
 export const DEFAULT_SCRATCH_DEF_PATH = process.env.HOB_SCRATCH_DEF_PATH || "config/project-scratch-def.json";
 export const DEFAULT_SCRATCH_PERMSETS = process.env.HOB_SCRATCH_PERMSETS || "";
 export const DEFAULT_SCRATCH_SEED_SCRIPT = process.env.HOB_SCRATCH_SEED_SCRIPT || "";
+
+// Testing defaults
+export const DEFAULT_TEST_WAIT = process.env.HOB_TEST_WAIT || "10";
+export const DEFAULT_TEST_COVERAGE = process.env.HOB_TEST_COVERAGE !== "false";

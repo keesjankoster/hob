@@ -47,6 +47,10 @@ export async function runCommand(
     };
   } catch (error: any) {
     const message = error.stderr || error.stdout || error.message;
-    throw new Error(`Failed to execute '${cmd} ${args.join(" ")}': ${message}`);
+    const err = new Error(`Failed to execute '${cmd} ${args.join(" ")}': ${message}`);
+    (err as any).stdout = error.stdout?.toString() ?? "";
+    (err as any).stderr = error.stderr?.toString() ?? "";
+    (err as any).exitCode = error.exitCode;
+    throw err;
   }
 }

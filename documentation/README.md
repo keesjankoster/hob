@@ -25,6 +25,7 @@ Explore the documentation for each command:
 | `hob hearth [alias]`           | Light, inspect, or sweep the hearth (Dev Hub management)    | [🕯️ The Hearth (Dev Hub)](hearth.md)                    |
 | `hob scratch new [alias]`      | Full setup pipeline for scratch orgs (create, push, seed)   | [⚡ Scratch Orgs (Lifecycle & Purge)](scratch.md)        |
 | `hob scratch purge`            | Delete expired/active scratch orgs and keep Dev Hub clean   | [⚡ Scratch Orgs (Lifecycle & Purge)](scratch.md)        |
+| `hob test [class]`             | Run unit tests with formatted summaries & coverage bars     | [🧪 Running Apex Tests & Coverage](test.md)              |
 
 ---
 

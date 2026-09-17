@@ -5,6 +5,7 @@ import { Command } from "commander";
 import { registerCreateCommand } from "./commands/create/index.js";
 import { registerHearthCommand } from "./commands/hearth.js";
 import { registerScratchCommand } from "./commands/scratch/index.js";
+import { registerTestCommand } from "./commands/test.js";
 
 // Read version safely from package.json
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -30,6 +31,7 @@ program
 registerCreateCommand(program);
 registerHearthCommand(program);
 registerScratchCommand(program);
+registerTestCommand(program);
 
 // Handle unknown commands gracefully
 program.on("command:*", (operands) => {
