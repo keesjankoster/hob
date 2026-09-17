@@ -23,7 +23,7 @@ const program = new Command();
 
 program
   .name("hob")
-  .description("🧙‍♂️ Hob: The Salesforce House-Elf 🧦\nQuiet, loyal assistance for your Salesforce & Git workflows")
+  .description("🧙 Hob: The Salesforce House-Elf 🧦\nQuiet, loyal assistance for your Salesforce & Git workflows")
   .version(version, "-v, --version", "Output the current version of Hob");
 
 // Register commands

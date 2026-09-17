@@ -3,7 +3,7 @@ import pc from "picocolors";
 export const logger = {
   banner(): void {
     console.log();
-    console.log(pc.bold(pc.magenta("  🧙‍♂️ Hob ")) + pc.dim("— The Salesforce House-Elf 🧦"));
+    console.log(pc.bold(pc.magenta("  🧙 Hob ")) + pc.dim("— The Salesforce House-Elf 🧦"));
     console.log(pc.dim("  \"Loyal, quiet, and tireless assistance for your Salesforce Development.\""));
     console.log();
   },
