@@ -12,6 +12,8 @@ export function registerSeedCommand(program: Command): void {
     .option("-p, --plan <plan>", "Plan definition file to insert")
     .option("-f, --files <files...>", "Direct JSON data files to insert")
     .option("--apex <script>", "Apex seed script to run")
+    .option("-y, --no-prompt", "Do not prompt for confirmation when seeding into non-scratch orgs", false)
+    .option("--force", "Force execution without confirmation (same as --no-prompt)")
     .action(async (file: string | undefined, options: SeedImportOptions) => {
       logger.banner();
       await handleSeedImport(file, options);

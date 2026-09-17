@@ -1,5 +1,7 @@
 import path from "node:path";
 import fs from "node:fs";
+import readline from "node:readline/promises";
+import { stdin as input, stdout as output } from "node:process";
 import pc from "picocolors";
 import ora from "ora";
 import { logger } from "../../utils/logger.js";
@@ -11,6 +13,17 @@ export interface SeedImportOptions {
   plan?: string;
   files?: string | string[];
   apex?: string;
+  noPrompt?: boolean;
+  force?: boolean;
+}
+
+export interface OrgInspectionResult {
+  username: string;
+  alias?: string;
+  isScratch: boolean;
+  orgEdition?: string;
+  isSandbox?: boolean;
+  isDevHub?: boolean;
 }
 
 /**
@@ -47,6 +60,84 @@ export function discoverSeedTarget(projectRoot: string): string | null {
   return null;
 }
 
+/**
+ * Inspects target org to determine whether it is a scratch org or persistent environment
+ */
+export async function inspectTargetOrg(targetOrgInput?: string): Promise<OrgInspectionResult | null> {
+  try {
+    const { stdout } = await runCommand("sf", ["org", "list", "--json"]);
+    const data = JSON.parse(stdout);
+    const result = data.result || {};
+
+    const scratchOrgs: any[] = result.scratchOrgs || [];
+    const nonScratchOrgs: any[] = result.nonScratchOrgs || [];
+    const devHubs: any[] = result.devHubs || [];
+    const sandboxes: any[] = result.sandboxes || [];
+    const other: any[] = result.other || [];
+
+    const allOrgs = [
+      ...scratchOrgs.map((o) => ({ ...o, isScratch: true })),
+      ...nonScratchOrgs,
+      ...devHubs,
+      ...sandboxes,
+      ...other
+    ];
+
+    let matched: any = undefined;
+
+    if (targetOrgInput) {
+      const lower = targetOrgInput.toLowerCase();
+      matched = allOrgs.find(
+        (o) => o.alias?.toLowerCase() === lower || o.username?.toLowerCase() === lower
+      );
+    } else {
+      matched = allOrgs.find((o) => o.isDefaultUsername === true);
+    }
+
+    if (matched) {
+      return {
+        username: matched.username,
+        alias: matched.alias,
+        isScratch: Boolean(matched.isScratch),
+        orgEdition: matched.orgEdition,
+        isSandbox: Boolean(matched.isSandbox),
+        isDevHub: Boolean(matched.isDevHub)
+      };
+    }
+
+    // Fallback: If targetOrgInput was explicitly given but not matched in local list
+    if (targetOrgInput) {
+      try {
+        const { stdout: dispStdout } = await runCommand("sf", [
+          "org",
+          "display",
+          "--target-org",
+          targetOrgInput,
+          "--json"
+        ]);
+        const dispData = JSON.parse(dispStdout);
+        if (dispData.result) {
+          const res = dispData.result;
+          return {
+            username: res.username,
+            alias: res.alias,
+            isScratch: Boolean(res.isScratch || res.edition?.toLowerCase() === "scratch"),
+            orgEdition: res.edition || res.orgEdition,
+            isSandbox: Boolean(res.isSandbox),
+            isDevHub: Boolean(res.isDevHub)
+          };
+        }
+      } catch {
+        // Leave null
+      }
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export async function handleSeedImport(
   rawFile: string | undefined,
   options: SeedImportOptions
@@ -73,10 +164,97 @@ export async function handleSeedImport(
     }
   }
 
-  const targetOrg = options.targetOrg || "default org";
+  // Pre-validate seed file existence if targetFile is specified
+  let resolvedTargetFile: string | null = null;
+  if (targetFile) {
+    resolvedTargetFile = path.isAbsolute(targetFile)
+      ? targetFile
+      : path.resolve(projectRoot, targetFile);
+
+    if (!fs.existsSync(resolvedTargetFile)) {
+      logger.error(`Seed file not found: ${resolvedTargetFile}`);
+      console.log();
+      process.exit(1);
+    }
+  }
+
+  // Verify target org and protect persistent non-scratch environments
+  const inspectSpinner = ora({
+    text: "Hob is verifying target org environment...",
+    color: "magenta"
+  }).start();
+
+  const orgInfo = await inspectTargetOrg(options.targetOrg);
+  inspectSpinner.stop();
+
+  if (!options.targetOrg && (!orgInfo || !orgInfo.username)) {
+    logger.error(
+      "No default org found in Salesforce CLI. Please specify --target-org <org> or set a default org."
+    );
+    console.log();
+    process.exit(1);
+  }
+
+  // Safety check: Prompt if target org is NOT a scratch org
+  if (orgInfo && !orgInfo.isScratch) {
+    const orgDisplayName = orgInfo.alias
+      ? `${orgInfo.alias} (${orgInfo.username})`
+      : orgInfo.username;
+    const editionType =
+      orgInfo.orgEdition || (orgInfo.isSandbox ? "Sandbox" : "Non-Scratch Org");
+    const seedTargetDesc =
+      targetFile ||
+      (Array.isArray(options.files) ? options.files.join(", ") : options.files) ||
+      "seed data";
+
+    console.log();
+    console.log(
+      pc.bold(pc.bgYellow(pc.black("  ⚠  WARNING: TARGET ORG IS NOT A SCRATCH ORG!  ")))
+    );
+    console.log();
+    console.log(`  ${pc.bold("Target Org:")}   ${pc.yellow(orgDisplayName)}`);
+    console.log(
+      `  ${pc.bold("Environment:")}  ${pc.red(editionType)} ${orgInfo.isDevHub ? pc.dim("(Dev Hub)") : ""}`
+    );
+    console.log(`  ${pc.bold("Payload:")}      ${pc.cyan(seedTargetDesc)}`);
+    console.log();
+    console.log(
+      pc.yellow(
+        "  Seeding test data into a persistent Sandbox, Developer Edition, or Production org\n  may overwrite existing records, consume storage limits, or trigger business workflows."
+      )
+    );
+    console.log();
+
+    const skipPrompt = options.noPrompt || options.force;
+    if (!skipPrompt) {
+      const rl = readline.createInterface({ input, output });
+      const answer = await rl.question(
+        pc.bold(
+          pc.yellow(
+            "  Are you sure you want to seed data into this non-scratch org? [y/N]: "
+          )
+        )
+      );
+      rl.close();
+
+      const confirmed =
+        answer.trim().toLowerCase() === "y" || answer.trim().toLowerCase() === "yes";
+      if (!confirmed) {
+        console.log();
+        logger.info("Data seeding cancelled. No changes were made to the org.");
+        console.log();
+        return;
+      }
+      console.log();
+    }
+  }
+
+  const targetOrgDisplay = orgInfo?.alias
+    ? `${orgInfo.alias} (${orgInfo.username})`
+    : options.targetOrg || orgInfo?.username || "default org";
 
   console.log();
-  logger.elf(`Hob is sowing test data into '${pc.bold(pc.cyan(targetOrg))}'...`);
+  logger.elf(`Hob is sowing test data into '${pc.bold(pc.cyan(targetOrgDisplay))}'...`);
   console.log();
 
   const spinner = ora({
@@ -87,31 +265,28 @@ export async function handleSeedImport(
   try {
     if (options.files) {
       const raw = Array.isArray(options.files) ? options.files : [options.files];
-      const filePaths = raw.flatMap((f) => f.split(/[,\s]+/)).map((f) => f.trim()).filter(Boolean);
+      const filePaths = raw
+        .flatMap((f) => f.split(/[,\s]+/))
+        .map((f) => f.trim())
+        .filter(Boolean);
       const sfArgs = ["data", "import", "tree", "--files", filePaths.join(",")];
       if (options.targetOrg) sfArgs.push("--target-org", options.targetOrg);
 
       await runCommand("sf", sfArgs);
       spinner.succeed(pc.green(`Imported records from ${filePaths.length} data file(s).`));
-    } else if (targetFile) {
-      const resolved = path.isAbsolute(targetFile) ? targetFile : path.resolve(projectRoot, targetFile);
-
-      if (!fs.existsSync(resolved)) {
-        spinner.fail(`Seed file not found: ${resolved}`);
-        process.exit(1);
-      }
-
+    } else if (targetFile && resolvedTargetFile) {
       if (targetFile.endsWith(".apex")) {
-        const sfArgs = ["apex", "run", "--file", resolved];
+        const sfArgs = ["apex", "run", "--file", resolvedTargetFile];
         if (options.targetOrg) sfArgs.push("--target-org", options.targetOrg);
 
         await runCommand("sf", sfArgs);
-        spinner.succeed(pc.green(`Apex seed script '${pc.bold(targetFile)}' executed successfully.`));
+        spinner.succeed(
+          pc.green(`Apex seed script '${pc.bold(targetFile)}' executed successfully.`)
+        );
       } else if (targetFile.endsWith(".json")) {
-        // Check if it's a plan file or single tree file
         let isPlan = targetFile.endsWith("-plan.json") || targetFile.includes("plan");
         try {
-          const content = JSON.parse(fs.readFileSync(resolved, "utf-8"));
+          const content = JSON.parse(fs.readFileSync(resolvedTargetFile, "utf-8"));
           if (Array.isArray(content) || (content && Array.isArray(content.items))) {
             isPlan = true;
           }
@@ -121,19 +296,21 @@ export async function handleSeedImport(
 
         const sfArgs = ["data", "import", "tree"];
         if (isPlan) {
-          sfArgs.push("--plan", resolved);
+          sfArgs.push("--plan", resolvedTargetFile);
         } else {
-          sfArgs.push("--files", resolved);
+          sfArgs.push("--files", resolvedTargetFile);
         }
         if (options.targetOrg) sfArgs.push("--target-org", options.targetOrg);
 
         await runCommand("sf", sfArgs);
         spinner.succeed(
-          pc.green(`Data tree ${isPlan ? "plan" : "file"} '${pc.bold(targetFile)}' imported successfully.`)
+          pc.green(
+            `Data tree ${isPlan ? "plan" : "file"} '${pc.bold(targetFile)}' imported successfully.`
+          )
         );
       } else {
         // Fallback to apex run
-        const sfArgs = ["apex", "run", "--file", resolved];
+        const sfArgs = ["apex", "run", "--file", resolvedTargetFile];
         if (options.targetOrg) sfArgs.push("--target-org", options.targetOrg);
 
         await runCommand("sf", sfArgs);

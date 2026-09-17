@@ -83,7 +83,13 @@ hob seed init -t json
 | `-p, --plan <plan>` | `-p` | | Plan definition file to insert |
 | `-f, --files <files...>` | `-f` | | Comma-separated JSON files to insert |
 | `--apex <script>` | | | Apex seed script to execute |
+| `-y, --no-prompt` | `-y` | `false` | Do not prompt for confirmation when seeding into non-scratch orgs |
+| `--force` | | `false` | Force execution without confirmation (same as `--no-prompt`) |
 | `--help` | `-h` | | Display help for the command |
+
+> [!TIP]
+> **Safety Guard**: `hob seed` inspects the target org's `isScratch` and `edition` metadata prior to running seed scripts or importing data plans. If targeted against a persistent Sandbox, Developer Edition, or Production org, Hob prints a prominent warning banner and requires interactive confirmation before making any changes. Pass `-y` or `--no-prompt` in automated CI/CD pipelines to bypass the interactive prompt.
+
 
 ### `hob seed export`
 
