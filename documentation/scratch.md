@@ -52,22 +52,26 @@ hob scratch new test-org -v my-devhub
 
 ### Purging Scratch Orgs (Keeping Limits Clean)
 
+By default, `hob scratch purge` **only purges expired scratch orgs**, safely preserving your active development environments. To include active scratch orgs, explicitly pass `--all` (`-a`) or `--active-only`.
+
 ```bash
-# Interactively preview and delete all scratch orgs for the default Dev Hub
+# Safely find and delete expired scratch orgs for the default Dev Hub (default mode)
 hob scratch purge
 
-# Purge without interactive confirmation prompt
-hob scratch purge --no-prompt
-hob scratch purge -f
-
-# Only delete expired scratch orgs
-hob scratch purge --expired-only
+# Delete all scratch orgs (both expired and active) linked to the Dev Hub
+hob scratch purge --all
+hob scratch purge -a
 
 # Only delete active scratch orgs
 hob scratch purge --active-only
 
+# Purge expired scratch orgs without interactive confirmation prompt
+hob scratch purge --no-prompt
+hob scratch purge -f
+
 # Dry run to see what would be deleted without making changes
 hob scratch purge --dry-run
+hob scratch purge --all --dry-run
 
 # Target a specific Dev Hub
 hob scratch purge -v my-devhub
@@ -97,7 +101,8 @@ hob scratch purge -v my-devhub
 | Option | Shorthand | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `--target-dev-hub <devhub>`| `-v` | Default Dev Hub | Target Dev Hub org alias or username |
-| `--expired-only` | | `false` | Only delete expired scratch orgs |
+| `--all` | `-a` | `false` | Delete all scratch orgs (both expired and active) |
+| `--expired-only` | | `true` (default) | Only delete expired scratch orgs |
 | `--active-only` | | `false` | Only delete active scratch orgs |
 | `--no-prompt` | `-p` | `false` | Do not prompt for confirmation before deleting |
 | `--force` | `-f` | `false` | Force deletion without prompt (same as `--no-prompt`) |
@@ -106,5 +111,7 @@ hob scratch purge -v my-devhub
 | `--help` | `-h` | | Display help for the command |
 
 > [!TIP]
-> **Safety Guard**: `hob scratch purge` strictly checks both `devHubUsername` and `devHubOrgId` against the selected Dev Hub. Scratch orgs with unconfirmed Dev Hub ownership (e.g., from direct auth logins or other hubs) are safely skipped by default to prevent accidental data loss. Pass `--include-unknown` only if you explicitly intend to purge unlinked scratch orgs.
+> **Safety Guard**: 
+> 1. **Active Org Protection**: `hob scratch purge` defaults to `--expired-only` so running `hob scratch purge --no-prompt` in scripts or CI will never accidentally wipe active work. Use `--all` (`-a`) or `--active-only` when you deliberately want to delete active orgs.
+> 2. **Dev Hub Isolation**: Hob strictly checks both `devHubUsername` and `devHubOrgId` against the selected Dev Hub. Scratch orgs with unconfirmed Dev Hub ownership (e.g., from direct auth logins or other hubs) are safely skipped by default to prevent accidental data loss. Pass `--include-unknown` only if you explicitly intend to purge unlinked scratch orgs.
 

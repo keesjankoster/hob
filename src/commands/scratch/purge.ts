@@ -9,6 +9,7 @@ import { DEFAULT_DEVHUB_ALIAS } from "../../constants.js";
 
 export interface ScratchPurgeOptions {
   targetDevHub?: string;
+  all?: boolean;
   expiredOnly?: boolean;
   activeOnly?: boolean;
   noPrompt?: boolean;
@@ -44,10 +45,11 @@ export function registerScratchPurgeCommand(scratchCmd: Command): void {
   scratchCmd
     .command("purge")
     .description(
-      "Find and delete expired and active scratch orgs linked to the Dev Hub to keep limits clean"
+      "Find and delete expired scratch orgs linked to the Dev Hub (use --all to include active orgs)"
     )
     .option("-v, --target-dev-hub <devhub>", "Target Dev Hub org alias or username")
-    .option("--expired-only", "Only delete expired scratch orgs")
+    .option("-a, --all", "Delete all scratch orgs (both expired and active)")
+    .option("--expired-only", "Only delete expired scratch orgs (default behavior)")
     .option("--active-only", "Only delete active scratch orgs")
     .option("-p, --no-prompt", "Do not prompt for confirmation before deleting", false)
     .option("-f, --force", "Force deletion without prompt (same as --no-prompt)")
@@ -143,20 +145,37 @@ export function registerScratchPurgeCommand(scratchCmd: Command): void {
         console.log();
       }
 
-      // Filter by status if specified
-      if (options.expiredOnly) {
-        linkedOrgs = linkedOrgs.filter(
-          (org) => org.isExpired || org.status?.toLowerCase() === "expired"
+      // Status filtering: Default is expired-only for safety.
+      // Active orgs are ONLY included if --all (-a) or --active-only is explicitly requested.
+      const isExpiredOrg = (org: ScratchOrgInfo) =>
+        Boolean(org.isExpired || org.status?.toLowerCase() === "expired");
+
+      let activeOrgsSkipped = 0;
+
+      if (options.activeOnly) {
+        linkedOrgs = linkedOrgs.filter((org) => !isExpiredOrg(org));
+      } else if (options.all) {
+        // Keep all (both expired and active)
+      } else {
+        // Default safe behavior: expired-only
+        const activeCount = linkedOrgs.filter((org) => !isExpiredOrg(org)).length;
+        activeOrgsSkipped = activeCount;
+        linkedOrgs = linkedOrgs.filter(isExpiredOrg);
+      }
+
+      if (activeOrgsSkipped > 0) {
+        logger.info(
+          pc.dim(
+            `Notice: Preserved ${activeOrgsSkipped} active scratch org(s) for safety (use --all to purge active orgs as well).`
+          )
         );
-      } else if (options.activeOnly) {
-        linkedOrgs = linkedOrgs.filter(
-          (org) => !org.isExpired && org.status?.toLowerCase() !== "expired"
-        );
+        console.log();
       }
 
       if (linkedOrgs.length === 0) {
+        const modeDesc = options.activeOnly ? "active " : options.all ? "" : "expired ";
         logger.success(
-          `No ${options.expiredOnly ? "expired " : options.activeOnly ? "active " : ""}scratch orgs found linked to Dev Hub '${hubDisplayName}'.`
+          `No ${modeDesc}scratch orgs found linked to Dev Hub '${hubDisplayName}'.`
         );
         logger.elf("The hearth is already tidy and limits are clean! 🧦");
         console.log();
